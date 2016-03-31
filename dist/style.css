@@ -181,6 +181,9 @@ img {
 	-webkit-align-items: flex-start;
 	-ms-flex-align: start;
 	align-items: flex-start;
+
+	position: relative;
+	z-index: 2;
 }
 .text {
 	margin: 20px;

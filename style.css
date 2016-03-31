@@ -150,6 +150,9 @@ img {
 	flex-flow: column nowrap;
 	justify-content: flex-start;
 	align-items: flex-start;
+
+	position: relative;
+	z-index: 2;
 }
 .text {
 	margin: 20px;
