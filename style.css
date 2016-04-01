@@ -4,8 +4,8 @@ abbr,acronym,address,applet,article,aside,audio,b,big,blockquote,body,canvas,cap
 
 /* defaults */
 body {
-	background: #fff;
-	color: #000;
+	background: #000;
+	color: #fff;
 	font: 16px/1.4 'arial', sans-serif;
 	-webkit-font-smoothing: subpixel-antialiased;
 }
