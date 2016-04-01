@@ -166,7 +166,7 @@ $(document).ready(function() {
 	var newPlayer = document.createElement('audio');
 	newPlayer.setAttribute('id', 'player');
 	newPlayer.setAttribute('preload', 'auto');
-	newPlayer.setAttribute('controls');
+	newPlayer.setAttribute('controls', '');
 	document.getElementById('content').appendChild(newPlayer);
 
 	var soundcloud = new Soundcloud();
