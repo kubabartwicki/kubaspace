@@ -1,18 +1,37 @@
-/* kuba.space */
-/* a lot of the web audio api taken from michael bromley's soundcloud visualiser */
-/* https://github.com/michaelbromley/soundcloud-visualizer */
-/* THANK YOU */
-/* ENJOY AND COME AGAIN */
+/*
+
+kuba.space
+
+a lot of the web audio api taken from michael bromley's soundcloud visualiser - https://github.com/michaelbromley/soundcloud-visualizer
+georgios kaleadis' safari audio fix has been a lifesaver as well - http://www.2vc.org/audio-bug/
+piotr mierzejewski the js saviour also figured out this chrome bug - https://github.com/soundcloud/soundcloud-javascript/issues/39#issuecomment-189675794
+
+THANK YOU
+ENJOY AND COME AGAIN
+
+*/
 
 var SoundCloudAudioSource = function(player) {
     var self = this;
     var analyser;
+
+    function audioCtxFix(ctx) {
+    	if(ctx.state == 'running') { return; }
+    	setTimeout(function(){
+    		if(ctx.state == 'suspended') {
+	    		if(ctx.resume) { ctx.resume(); }
+	    		return ctx.state == 'running';
+	    	} else { return true; }
+    	}, 2000);
+    }
     var audioCtx = new (window.AudioContext || window.webkitAudioContext);
+    audioCtxFix(audioCtx);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
     player.crossOrigin = "anonymous";
     var source = audioCtx.createMediaElementSource(player);
     source.connect(analyser);
+    source.mediaElement.play();
     analyser.connect(audioCtx.destination);
     var sampleAudioStream = function() {
         analyser.getByteFrequencyData(self.streamData);
@@ -22,9 +41,14 @@ var SoundCloudAudioSource = function(player) {
         }
         self.volume = total;
     };
+
     setInterval(sampleAudioStream, 20);
     this.volume = 0;
     this.streamData = new Uint8Array(128);
+    this.playStream = function(streamUrl) {
+    	player.src = streamUrl;
+        player.play();
+    }
 };
 
 var Visualiser = function() {
@@ -109,37 +133,43 @@ var Visualiser = function() {
 
 var Soundcloud = function() {
 
-	SC.initialize({ client_id: "523eb1fe14a651e4313c193c7c64c964" });
-	var trackUrl = '/tracks/254826327?secret_token=s-pY365';
-	var streamUrl;
+	var trackUrl = '/tracks/254826327';
 	var playerElement = document.getElementById('player');
-	var visualiser = new Visualiser;
-	var audioSource = new SoundCloudAudioSource(playerElement);
-	visualiser.init({
-		containerId: 'visualiser',
-		audioSource: audioSource
-	});
 
+	SC.initialize({ client_id: "523eb1fe14a651e4313c193c7c64c964" });
 	SC.get(trackUrl, function(track) {
 		SC.stream(track.uri, function(player) {
-			streamUrl = player.url;
-			$('#player').attr('src', streamUrl);
+			var streamUrl = player.url;
+			var visualiser = new Visualiser();
+			var audioSource = new SoundCloudAudioSource(playerElement);
+
+			audioSource.playStream(streamUrl);
+			visualiser.init({
+				containerId: 'visualiser',
+				audioSource: audioSource
+			});
 		});
 	});
 
 	this.directStream = function(){
-        if (playerElement.paused) {
-      	      playerElement.play();
-        } else {
-            playerElement.pause();
+		if (playerElement.paused) {
+			playerElement.play();
+		} else {
+			playerElement.pause();
         }
 	};
 
 };
 
-$(window).load(function() {
-	var soundcloud = new Soundcloud();
+$(document).ready(function() {
 
+	var newPlayer = document.createElement('audio');
+	newPlayer.setAttribute('id', 'player');
+	newPlayer.setAttribute('preload', 'auto');
+	newPlayer.setAttribute('controls');
+	document.getElementById('content').appendChild(newPlayer);
+
+	var soundcloud = new Soundcloud();
 	window.addEventListener("keydown", keyControls, false);
 	function keyControls(e) {
 	    switch(e.keyCode) {
